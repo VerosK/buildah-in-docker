@@ -1,0 +1,48 @@
+---
+# defaults file for postgresql
+
+docker_add_repository: true
+
+docker_ignore_start_errors: false
+
+docker_deb_packages:
+  - docker.io
+  - python-docker
+  - docker-compose
+
+docker_service_name: docker
+
+docker_yum_packages:
+  - docker-ce
+  - python-docker
+
+docker_yum_repos:
+  - name: docker-ce-stable
+    description: Docker CE Stable - $basearch
+    baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+    enabled: 1
+    gpgcheck: 1
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+
+docker_service_enable: true
+docker_service_state: started
+
+docker_create_group: true
+docker_group_members: []
+
+docker_config_files: []
+
+docker_compose: true  # add docker-compose
+docker_compose_version: "1.24.1"
+docker_compose_bin: /usr/bin/docker-compose
+docker_compose_os: '{{ ansible_system }}'
+docker_compose_arch: '{{ ansible_architecture|default("x86_84") }}'
+_docker_compose_base_url: https://github.com/docker/compose/releases/download/
+docker_compose_url:
+  '{{ _docker_compose_base_url }}/1.23.1/docker-compose-{{ docker_compose_os }}-{{ docker_compose_arch }}'
+
+# docker_config_files          # disable bridge networking
+#  - name: /etc/sysconfig/docker-network
+#    content: |
+#        DOCKER_NETWORK_OPTIONS="--bridge=none"

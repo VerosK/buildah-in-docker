@@ -1,0 +1,53 @@
+- name: Check
+  hosts: all
+  tasks:
+    - name: Check
+      ping:
+
+- name: Setup Docker
+  hosts: all
+
+  roles:
+    - role: VerosK.docker
+
+- name: Setup buildah and podman
+  hosts: all
+  tasks:
+    - name: Add vagrant to  Docker group
+      user:
+         name: '{{ ansible_user }}'
+         groups: docker
+
+    - name: Enable user namespaces
+      sysctl:
+        name: '{{ item }}'
+        value: 15000
+        state: present
+      loop:
+        - user.max_user_namespaces
+
+    - name: Provide build files
+      copy:
+        src: '{{ item }}'
+        dest: '~{{ ansible_user }}/{{ item }}'
+        mode: "{% if item.endswith('.sh') %}755{% else %}644{% endif %}"
+      loop:
+        - prepare-buildah-container.sh
+        - test-buildah.sh
+        - run-buildah-build.sh
+        - buildah.Dockerfile
+        - python.Dockerfile
+
+
+
+    - name: Create local buildah image
+      shell:
+        bash prepare-buildah-container.sh
+      args:
+        chdir: '~{{ ansible_user }}'
+
+      become_user: '{{ ansible_user }}'
+      become: yes
+
+    #- name: Pull podman
+    #  shell: docker pull docker.io/podman

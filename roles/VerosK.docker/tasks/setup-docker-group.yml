@@ -1,0 +1,15 @@
+---
+- name: Create Docker group
+  group:
+    name: docker
+    state: present
+    system: true
+  notify: Restart Docker Engine
+
+- name: Add users to docker group
+  user:
+    name: '{{ item }}'
+    groups: 'docker'
+    append: true
+  with_items: '{{ docker_group_members }}'
+  notify: Restart Docker Engine

@@ -1,0 +1,9 @@
+---
+- name: Restart Docker Engine
+  service:
+    name: '{{ docker_service_name }}'
+    state: restarted
+
+- name: systemctl daemon-reload
+  systemd:
+    daemon_reload: true

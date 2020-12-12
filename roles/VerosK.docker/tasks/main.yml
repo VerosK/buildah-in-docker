@@ -1,0 +1,59 @@
+---
+- name: 'Check ansible version >= 2.0'
+  assert:
+    that:
+      - 'ansible_version.major is number'
+      - 'ansible_version.major >= 2'
+
+- name: "Include variables"
+  include_vars: '{{ item }}'
+  with_first_found:
+    - files:
+        - '{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml'
+        - '{{ ansible_distribution }}.yml'
+        - '{{ ansible_os_family }}.yml'
+      path:
+        - '../vars'
+
+- name: Install on Debian
+  include: install-debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Install on RedHat
+  include: install-redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: Setup docker group
+  include: setup-docker-group.yml
+  when: docker_create_group
+
+- name: Create Docker config directory
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: Create directories for config
+  file:
+    path: '{{ item.name | dirname }}'
+    state: directory
+  with_items: '{{ docker_config_files }}'
+
+- name: Setup Docker configs
+  copy:
+    dest: '{{ item.name }}'
+    content: '{{ item.content }}'
+  with_items: '{{ docker_config_files }}'
+  notify: systemctl daemon-reload
+
+- meta: flush_handlers
+
+- include: setup-docker-compose.yml
+  when: docker_compose
+
+- name: Enable Docker service
+  service:
+    name: "{{ docker_service_name }}"
+    enabled: "{{ docker_service_enable }}"
+    state: "{{ docker_service_state }}"
+  ignore_errors: '{{ docker_ignore_start_errors }}'

@@ -1,0 +1,11 @@
+---
+- name: Add yum repositories
+  yum_repository:
+    name: '{{ item.name }}'
+    description: '{{ item.description }}'
+    state: '{{ item.state|default("present") }}'
+    enabled: '{{ item.enabled|default(1) }}'
+    baseurl: '{{ item.baseurl }}'
+    gpgcheck: '{{ item.gpgcheck|default(1) }}'
+    gpgkey: '{{ item.gpgkey }}'
+  with_items: '{{ docker_yum_repos }}'

@@ -1,0 +1,6 @@
+---
+- name: Download docker-compose
+  get_url:
+    url: '{{ docker_compose_url }}'
+    dest: '{{ docker_compose_bin }}'
+    mode: 0755

@@ -1,0 +1,25 @@
+---
+- name: 'Check ansible version >= 2.0'
+  assert:
+    that:
+      - 'ansible_version.major is number'
+      - 'ansible_version.major >= 2'
+
+- name: Set-up apt-repository (when needed)
+  include: apt-repository.yml
+  when: docker_add_repository
+
+- name: Install docker
+  apt:
+    name: "{{ docker_deb_packages }}"
+    state: "present"
+  notify: Restart Docker Engine
+
+- name: "Add insecure_registry"
+  lineinfile:
+    dest: '{{ docker_config }}'
+    line: '{{ docker_insecure_registry_key }}="--insecure-registry {{ docker_insecure_registry }}"'
+    insertafter: '^#{{ docker_insecure_registry_key }}'
+    backup: true
+  when: docker_insecure_registry is defined
+  notify: Restart Docker Engine
