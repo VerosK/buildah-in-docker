@@ -16,7 +16,7 @@ It works:
 
 3. Build `buildah` Docker image with `docker build`
 
-      ./prepare-buildah-container.sh
+       ./prepare-buildah-container.sh
       
 4. Create python image based on `alpine` and save it 
 
